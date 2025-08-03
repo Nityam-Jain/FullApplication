@@ -1,0 +1,11 @@
+# Backend
+Backend/node_modules/
+Backend/.env
+
+# Frontend
+material-dashboard-react-main/node_modules/
+material-dashboard-react-main/.env
+
+# General
+*.log
+.DS_Store
