@@ -70,7 +70,7 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    console.log("Connected to MongoD  B");
+    console.log("Connected to MongoDB");
     app.listen(process.env.PORT, () =>
       console.log(`Server running on http://localhost:${process.env.PORT}`)
     );

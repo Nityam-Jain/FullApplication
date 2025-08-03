@@ -14,15 +14,19 @@ Coded by www.creative-tim.com
 */
 
 import { useState } from "react";
+import axios from "axios";
 
 // react-router-dom components
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // @mui material components
 import Card from "@mui/material/Card";
 import Switch from "@mui/material/Switch";
 import Grid from "@mui/material/Grid";
 import MuiLink from "@mui/material/Link";
+import { IconButton, InputAdornment } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import Tooltip from "@mui/material/Tooltip";
 
 // @mui icons
 import FacebookIcon from "@mui/icons-material/Facebook";
@@ -43,9 +47,33 @@ import bgImage from "assets/images/bg-sign-in-basic.jpeg";
 
 function Basic() {
   const [rememberMe, setRememberMe] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
   const handleSetRememberMe = () => setRememberMe(!rememberMe);
 
+  const navigate = useNavigate();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!rememberMe) {
+      alert("Please enable 'Remember me' to proceed.");
+      return;
+    }
+    try {
+      const response = await axios.post("http://localhost:5000/api/users/login", {
+        email: formData.email,
+        password: formData.password,
+      });
+
+      alert(response.data.message); // Login successful
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Login error:", error);
+      alert(error.response?.data?.error || "Login failed");
+    }
+  };
   return (
     <BasicLayout image={bgImage}>
       <Card>
@@ -75,19 +103,63 @@ function Basic() {
               </MDTypography>
             </Grid>
             <Grid item xs={2}>
-              <MDTypography component={MuiLink} href="#" variant="body1" color="white">
-                <GoogleIcon color="inherit" />
-              </MDTypography>
+              <Tooltip title="Continue with Google">
+                <MDTypography
+                  variant="body2"
+                  color="white"
+                  sx={{
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mx: 1.5,
+                  }}
+                  onClick={() => {
+                    window.location.href = "http://localhost:5000/auth/google";
+                  }}
+                >
+                  <GoogleIcon sx={{ fontSize: 40, color: "white" }} />
+                </MDTypography>
+              </Tooltip>
             </Grid>
           </Grid>
         </MDBox>
         <MDBox pt={4} pb={3} px={3}>
-          <MDBox component="form" role="form">
+          <MDBox component="form" role="form" onSubmit={handleSubmit}>
             <MDBox mb={2}>
-              <MDInput type="email" label="Email" fullWidth />
+              <MDInput
+                type="email"
+                label="Email"
+                name="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                fullWidth
+              />
             </MDBox>
             <MDBox mb={2}>
-              <MDInput type="password" label="Password" fullWidth />
+              <MDInput
+                type={showPassword ? "text" : "password"}
+                label="Password"
+                name="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                fullWidth
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => {
+                          setShowPassword(true); // show password
+                          setTimeout(() => setShowPassword(false), 500);
+                        }}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
             </MDBox>
             <MDBox display="flex" alignItems="center" ml={-1}>
               <Switch checked={rememberMe} onChange={handleSetRememberMe} />
@@ -102,7 +174,7 @@ function Basic() {
               </MDTypography>
             </MDBox>
             <MDBox mt={4} mb={1}>
-              <MDButton variant="gradient" color="info" fullWidth>
+              <MDButton type="submit" variant="gradient" color="info" fullWidth>
                 sign in
               </MDButton>
             </MDBox>
