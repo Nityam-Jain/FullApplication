@@ -46,6 +46,9 @@ import createCache from "@emotion/cache";
 // Material Dashboard 2 React routes
 import routes from "routes";
 
+import { useAuth } from "context/auth-context"; // You'll use this for login check
+import ProtectedRoute from "routes/ProtectedRoute"; // Route wrapper
+
 // Material Dashboard 2 React contexts
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
 
@@ -109,6 +112,8 @@ export default function App() {
     document.scrollingElement.scrollTop = 0;
   }, [pathname]);
 
+  const { user } = useAuth();
+
   const getRoutes = (allRoutes) =>
     allRoutes.map((route) => {
       if (route.collapse) {
@@ -116,7 +121,13 @@ export default function App() {
       }
 
       if (route.route) {
-        return <Route exact path={route.route} element={route.component} key={route.key} />;
+        const element = route.protected ? (
+          <ProtectedRoute>{route.component}</ProtectedRoute>
+        ) : (
+          route.component
+        );
+
+        return <Route exact path={route.route} element={element} key={route.key} />;
       }
 
       return null;
@@ -166,8 +177,10 @@ export default function App() {
         )}
         {layout === "vr" && <Configurator />}
         <Routes>
-          {getRoutes(routes)}
-          <Route path="*" element={<Navigate to="/dashboard" />} />
+          <Route
+            path="*"
+            element={<Navigate to={user ? "/dashboard" : "/authentication/sign-in"} />}
+          />
         </Routes>
       </ThemeProvider>
     </CacheProvider>
